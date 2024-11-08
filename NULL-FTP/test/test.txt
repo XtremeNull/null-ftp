@@ -1,0 +1,2 @@
+Test successful!
+NULL-FTP service is running correctly!
