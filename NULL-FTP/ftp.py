@@ -54,11 +54,5 @@ def test_file(filename):
     file_path = os.path.join(dir, filename)
     return send_file(file_path)
 
-@app.route('/nullftp/<filename>')
-def download_nullftp(filename):
-    dir = '/data/data/com.termux/files/home/NULL-FTP/download_nullftp'
-    file_path = os.path.join(dir, filename)
-    return send_file(file_path, as_attachment=True)
-
 if __name__ == '__main__':
     app.run(debug=True, host="0.0.0.0", port=8080)
