@@ -8,7 +8,7 @@ from ftplib import FTP
 app = Flask(__name__)
 
 FTP_DIR = './FTP/files'
-FTP_DIR = './test'
+TEST_DIR = './test'
 app.config['FTP_FOLDER'] = FTP_DIR
 app.config['TEST_FOLDER'] = TEST_DIR
 
@@ -44,15 +44,8 @@ def view_file(filename):
 
 @app.route('/test/<filename>')
 def test_file(filename):
-    dir = '/data/data/com.termux/files/home/NULL-FTP/test'
     file_path = os.path.join(app.config['TEST_FOLDER'], filename)
     return send_file(file_path)
-
-@app.route('/nullftp/<filename>')
-def download_nullftp(filename):
-    dir = '/data/data/com.termux/files/home/NULL-FTP/download_nullftp'
-    file_path = os.path.join(dir, filename)
-    return send_file(file_path, as_attachment=True)
 
 if __name__ == '__main__':
     app.run(debug=True, host="0.0.0.0", port=8080)
