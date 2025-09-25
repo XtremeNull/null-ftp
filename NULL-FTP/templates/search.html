@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>NULL-FTP Search Results</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <header>NULL-FTP Search Results</header>
+  <h1>Results for "{{ query }}"</h1>
+
+  <div>
+  {% if results %}
+    <ul>
+      {% for file in results %}
+        <li style="color: #ffffff;">
+          {{ file }}
+          [<a style="color: #ffffff;" href="{{ url_for('view_file', filename=file) }}">View</a>]
+          [<a style="color: #ffffff;" href="{{ url_for('download_file', filename=file) }}">Download</a>]
+        </li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <p style="color: #ffffff;">No files found.</p>
+  {% endif %}
+  </div>
+
+  <p><a href="{{ url_for('index') }}">Home</a></p>
+  <br>
+  <footer>
+    <p>&copy Copyright Ondrej Bicik 2025</p>
+  </footer>
+</body>
+</html>
