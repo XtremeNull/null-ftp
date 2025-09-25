@@ -14,4 +14,5 @@ In order for login system to work, you need to generate secret key (see line 10 
 You can generate the key with this command:
 python3 -c "import secrets; print(secrets.token_hex(32))"
 
-Also, don't forget to update the directories in ftp.py
+
+Also, don't forget to update the directories in ftp.py to match your desired ones
