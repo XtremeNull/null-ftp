@@ -1,6 +1,6 @@
 You can download NULL-FTP with the git clone command
 
-Alternatively, you can concider doing these steps:
+Alternatively, you can consider doing these steps:
 1. Install the Flask module with pip install flask
 2. Download zip file of this repo
 3. Exctract the downloaded zip file
