@@ -11,8 +11,8 @@ app.secret_key = ""
 
 USER_FILE = os.path.join(os.path.dirname(__file__), "users.json")
 
-FTP_DIR = '/home/null/NULL-FTP/FTP/files'
-TEST_DIR = '/home/null/NULL-FTP/test'
+FTP_DIR = '/your/path/to/dir'
+TEST_DIR = '/your/path/to/test/dir'
 app.config['FTP_FOLDER'] = FTP_DIR
 app.config['TEST_FOLDER'] = TEST_DIR
 
@@ -144,4 +144,5 @@ def test_file(filename):
     return send_file(file_path)
 
 if __name__ == '__main__':
+
     app.run(debug=True, host="0.0.0.0", port=8080)
