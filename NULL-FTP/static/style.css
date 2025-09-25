@@ -1,0 +1,9 @@
+h1{color: #236ab9;}
+header{background-color: #236ab9; color: #ffffff; font-family: Verdana, sans-serif; font-size: 20px; padding: 20px; text-align: center; border-radius: 25px;}
+body{background-color: #ffffff; color: #236ab9; font-family: Verdana, sans-serif;}
+a{color: #236ab9; font-family: Verdana, sans-serif;}
+input::file-selector-button{background-color: #236ab9; color: #ffffff; border: hidden; border-radius: 12px; font-family: Verdana, sans-serif; font-size: 20px; text-align: center;}
+button{background-color: #236ab9; color: #ffffff; border: hidden; border-radius: 12px; font-family: Verdana, sans-serif; font-size: 20px; text-align: center;}
+input{background-color: #ffffff; color: #236ab9;; border: hidden;}
+div{background-color: #236ab9; border-radius: 25px; padding: 20px;}
+label{color: #ffffff;}
