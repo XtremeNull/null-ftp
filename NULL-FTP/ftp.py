@@ -1,8 +1,10 @@
 from flask import Flask, render_template, request, redirect, url_for, send_from_directory, send_file, session
 from io import BytesIO
 from werkzeug.security import generate_password_hash, check_password_hash
+from werkzeug.utils import secure_filename
 import json
 import os
+import urllib.parse
 from ftplib import FTP
 
 app = Flask(__name__)
@@ -15,6 +17,62 @@ FTP_DIR = '/your/path/to/dir'
 TEST_DIR = '/your/path/to/test/dir'
 app.config['FTP_FOLDER'] = FTP_DIR
 app.config['TEST_FOLDER'] = TEST_DIR
+
+def is_safe_path(base_dir, filename):
+    """
+    Validate that the requested file path is safe and within the base directory.
+    Prevents path traversal attacks.
+    """
+    if not filename:
+        return False
+    
+    # Decode URL encoding attempts (do this multiple times to handle double encoding)
+    original_filename = filename
+    for _ in range(3):  # Handle up to triple encoding
+        decoded = urllib.parse.unquote(filename)
+        if decoded == filename:
+            break
+        filename = decoded
+    
+    # Block paths with null bytes or other suspicious characters
+    if '\x00' in filename or '\x00' in original_filename:
+        return False
+    
+    # Normalize path separators and handle various path traversal attempts
+    # Replace Windows-style separators and normalize
+    normalized_filename = filename.replace('\\', '/')
+    normalized_filename = os.path.normpath(normalized_filename)
+    
+    # Block absolute paths and paths that try to go up directories
+    if os.path.isabs(normalized_filename) or normalized_filename.startswith('..') or '/..' in normalized_filename:
+        return False
+        
+    # Construct the full path and verify it's within the base directory
+    full_path = os.path.join(base_dir, normalized_filename)
+    full_path = os.path.abspath(full_path)
+    base_dir = os.path.abspath(base_dir)
+    
+    # Check if the resolved path is within the base directory
+    return full_path.startswith(base_dir + os.sep) or full_path == base_dir
+
+def get_safe_file_path(base_dir, filename):
+    """
+    Get a safe file path within the base directory, or None if invalid.
+    """
+    if not is_safe_path(base_dir, filename):
+        return None
+    
+    # Decode URL encoding attempts (do this multiple times to handle double encoding)
+    for _ in range(3):  # Handle up to triple encoding
+        decoded = urllib.parse.unquote(filename)
+        if decoded == filename:
+            break
+        filename = decoded
+    
+    # Normalize path separators and handle various path traversal attempts
+    normalized_filename = filename.replace('\\', '/')
+    normalized_filename = os.path.normpath(normalized_filename)
+    return os.path.join(base_dir, normalized_filename)
 
 def load_users():
     if not os.path.exists(USER_FILE):
@@ -97,7 +155,9 @@ def search():
             for file in files:
                 if query in file.lower():
                     rel_path = os.path.relpath(os.path.join(root, file), FTP_DIR)
-                    results.append(rel_path)
+                    # Only include files that pass safety checks
+                    if is_safe_path(FTP_DIR, rel_path):
+                        results.append(rel_path)
 
     return render_template("search.html", query=query, results=results)
 
@@ -118,29 +178,56 @@ def upload():
     if 'file' not in request.files:
         return redirect("/")
     file = request.files['file']
-    if file:
-        file_path = os.path.join(app.config['FTP_FOLDER'], file.filename)
+    if file and file.filename:
+        # Secure the filename to prevent path traversal
+        safe_filename = secure_filename(file.filename)
+        if not safe_filename:
+            return 'Invalid filename.', 400
+        
+        file_path = os.path.join(app.config['FTP_FOLDER'], safe_filename)
         file.save(file_path)
 
         return 'File uploaded successfully to FTP server.'
 
 @app.route('/download/<filename>')
 def download_file(filename):
-    # Get the full path of the requested file
-    file_path = os.path.join(app.config['FTP_FOLDER'], filename)
+    # Validate and get safe file path
+    file_path = get_safe_file_path(app.config['FTP_FOLDER'], filename)
+    if not file_path:
+        return 'Invalid file path.', 400
+    
+    # Check if file exists
+    if not os.path.exists(file_path):
+        return 'File not found.', 404
+    
     # Send the file for download
     return send_file(file_path, as_attachment=True)
 
 @app.route('/view/<filename>')
 def view_file(filename):
-    # Get the full path of the requested file
-    file_path = os.path.join(app.config['FTP_FOLDER'], filename)
+    # Validate and get safe file path
+    file_path = get_safe_file_path(app.config['FTP_FOLDER'], filename)
+    if not file_path:
+        return 'Invalid file path.', 400
+    
+    # Check if file exists
+    if not os.path.exists(file_path):
+        return 'File not found.', 404
+    
     # Send the file for view
     return send_file(file_path, as_attachment=False)
 
 @app.route('/test/<filename>')
 def test_file(filename):
-    file_path = os.path.join(app.config['TEST_FOLDER'], filename)
+    # Validate and get safe file path
+    file_path = get_safe_file_path(app.config['TEST_FOLDER'], filename)
+    if not file_path:
+        return 'Invalid file path.', 400
+    
+    # Check if file exists
+    if not os.path.exists(file_path):
+        return 'File not found.', 404
+    
     return send_file(file_path)
 
 if __name__ == '__main__':
