@@ -21,29 +21,56 @@
   <h1>Welcome to NULL-FTP</h1>
   <b>Here, you can upload files to FTP server and download them from FTP server</b><br>
   <b>You can also view files here</b>
-
     <form method="post" enctype="multipart/form-data" action="/upload">
     <input type="file" name="file" required>
     <button type="submit">Upload</button>
   </form>
   <br>
   <div>
-    <h2 style="color: #ffffff;">List of Files</h2>
+    <h2 style="color: #ffffff;">Current Directory:
+      {% if current_path %}
+        /{{ current_path }}
+      {% else %}
+        /
+      {% endif %}
+    </h2>
+    {% if parent_path %}
+      <a class="styled" href="{{ url_for('index', subpath=parent_path) }}">Go Up</a><br><br>
+    {% endif %}
+    {% if folders %}
+      <h3 style="color: #ffffff;">Folders</h3>
+      <ul>
+        {% for folder in folders %}
+          <li class="styled">
+            <a class="styled" href="{{ url_for('index', subpath=folder) }}">{{ folder.split('/')[-1] }}</a>
+          </li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+    <h3 style="color: #ffffff;">Files</h3>
     <ul>
       {% for file in files %}
       <li class="styled">
-        {{ file }}
-        [ <a class="styled" href="/download/{{ file }}">Download</a>
-        | <a class="styled" href="/view/{{ file }}">View</a>
-	]
+        {{ file.split('/')[-1] }}
+        [
+          <a class="styled" href="/download/{{ file }}">Download</a> |
+          <a class="styled" href="/view/{{ file }}">View</a>
+        ]
       </li>
       {% endfor %}
     </ul>
-    <br>
+    {% if current_path %}
+      <form action="{{ url_for('index', subpath='') }}" method="get" style="display:inline;">
+        <button style="background-color: #ffffff; color: #236ab9;" type="submit">Back</button>
+      </form>
+    {% endif %}
   </div>
   <br>
   <a href="{{ url_for('logout') }}">Logout</a>
   &emsp;
   <a href="{{ url_for('unregister') }}">Delete account</a>
+<footer>
+        <p>&copy Copyright Ondrej Bicik 2025</p>
+</footer>
 </body>
 </html>
